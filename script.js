@@ -1,38 +1,51 @@
+
+const recordButton = document.getElementById("recordButton");
+const resultDiv = document.getElementById("result");
+
 let mediaRecorder;
-let audioChunks = [];
+let chunks = [];
 
-const button = document.getElementById("recordButton");
-const responseDiv = document.getElementById("response");
+recordButton.addEventListener("mousedown", startRecording);
+recordButton.addEventListener("touchstart", startRecording);
+recordButton.addEventListener("mouseup", stopRecording);
+recordButton.addEventListener("mouseleave", stopRecording);
+recordButton.addEventListener("touchend", stopRecording);
 
-button.addEventListener("mousedown", async () => {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  mediaRecorder = new MediaRecorder(stream);
-  audioChunks = [];
+function startRecording() {
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.start();
 
-  mediaRecorder.addEventListener("dataavailable", event => {
-    audioChunks.push(event.data);
+    chunks = [];
+    mediaRecorder.ondataavailable = e => chunks.push(e.data);
+
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(chunks, { type: "audio/webm" });
+      const formData = new FormData();
+      formData.append("audio_data", blob);
+
+      fetch("/transcribe", { method: "POST", body: formData })
+        .then(res => res.json())
+        .then(data => {
+          if (data.text) {
+            resultDiv.textContent = data.text;
+            speak(data.text);
+          } else {
+            resultDiv.textContent = "エラー: " + data.error;
+          }
+        });
+    };
   });
+}
 
-  mediaRecorder.addEventListener("stop", async () => {
-    const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-    const formData = new FormData();
-    formData.append("audio", audioBlob);
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== "inactive") {
+    mediaRecorder.stop();
+  }
+}
 
-    responseDiv.textContent = "🕒 応答中...";
-
-    const res = await fetch("/transcribe", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await res.json();
-    responseDiv.textContent = data.reply;
-  });
-
-  mediaRecorder.start();
-  responseDiv.textContent = "🎙️ 録音中…";
-});
-
-button.addEventListener("mouseup", () => {
-  mediaRecorder.stop();
-});
+function speak(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "ja-JP";
+  speechSynthesis.speak(utterance);
+}

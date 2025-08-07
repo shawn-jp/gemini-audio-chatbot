@@ -1,5 +1,4 @@
-Flask
-openai
-pydub
+flask
+flask-cors
 requests
-tokenizers
+gunicorn
