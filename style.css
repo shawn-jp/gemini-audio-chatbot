@@ -1,17 +1,1 @@
-
-body {
-  font-family: sans-serif;
-  text-align: center;
-  margin: 2em;
-  background: #f4f4f4;
-}
-button {
-  font-size: 1.2em;
-  padding: 1em 2em;
-  margin-top: 1em;
-}
-#result {
-  margin-top: 2em;
-  font-size: 1.2em;
-  white-space: pre-wrap;
-}
+body { font-family: sans-serif; text-align: center; padding: 2rem; }

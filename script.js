@@ -1,51 +1,41 @@
-
-const recordButton = document.getElementById("recordButton");
-const resultDiv = document.getElementById("result");
-
+let btn = document.getElementById("recordButton");
 let mediaRecorder;
 let chunks = [];
 
-recordButton.addEventListener("mousedown", startRecording);
-recordButton.addEventListener("touchstart", startRecording);
-recordButton.addEventListener("mouseup", stopRecording);
-recordButton.addEventListener("mouseleave", stopRecording);
-recordButton.addEventListener("touchend", stopRecording);
+btn.addEventListener("mousedown", startRec);
+btn.addEventListener("mouseup", stopRec);
+btn.addEventListener("touchstart", function(e) {
+  e.preventDefault();
+  startRec();
+});
+btn.addEventListener("touchend", stopRec);
 
-function startRecording() {
+function startRec() {
   navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
     mediaRecorder = new MediaRecorder(stream);
     mediaRecorder.start();
-
     chunks = [];
+
     mediaRecorder.ondataavailable = e => chunks.push(e.data);
-
     mediaRecorder.onstop = () => {
-      const blob = new Blob(chunks, { type: "audio/webm" });
+      const blob = new Blob(chunks, { type: 'audio/webm' });
       const formData = new FormData();
-      formData.append("audio_data", blob);
+      formData.append('audio', blob);
 
-      fetch("/transcribe", { method: "POST", body: formData })
-        .then(res => res.json())
-        .then(data => {
-          if (data.text) {
-            resultDiv.textContent = data.text;
-            speak(data.text);
-          } else {
-            resultDiv.textContent = "エラー: " + data.error;
-          }
-        });
+      fetch('/transcribe', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("result").innerText = data.response || "エラー";
+      });
     };
   });
 }
 
-function stopRecording() {
+function stopRec() {
   if (mediaRecorder && mediaRecorder.state !== "inactive") {
     mediaRecorder.stop();
   }
-}
-
-function speak(text) {
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "ja-JP";
-  speechSynthesis.speak(utterance);
 }
