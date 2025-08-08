@@ -2,19 +2,114 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gemini 音声チャット</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>音声チャットボット</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2em;
+    }
+    .button-wrapper {
+      margin: 2em 0;
+    }
+    #recordButton {
+      background: transparent;
+      border: none;
+    }
+    #recordButton img {
+      width: 100px;
+      height: 100px;
+    }
+    #response {
+      margin-top: 2em;
+      font-size: 1.2em;
+      white-space: pre-wrap;
+    }
+    #textInput {
+      margin-top: 1em;
+    }
+  </style>
 </head>
 <body>
-  <h1>🎙 Gemini 音声チャット</h1>
-  <img id="recordButton" src="rec_button.png" alt="録音ボタン" />
-  <p>またはテキストで送信：</p>
-  <form id="textForm">
-    <input type="text" id="textInput" placeholder="ここに入力" />
-    <button type="submit">送信</button>
-  </form>
-  <div id="result"></div>
-  <script src="script.js"></script>
+  <h1>音声チャットボット</h1>
+  <div class="button-wrapper">
+    <button id="recordButton">
+      <img id="recIcon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Record_button_icon.svg/1024px-Record_button_icon.svg.png" alt="REC">
+    </button>
+    <br />
+    <input type="text" id="textInput" placeholder="うまくいかないときはここに入力" />
+    <button onclick="sendText()">送信</button>
+  </div>
+  <div id="response"></div>
+
+  <script>
+    let mediaRecorder;
+    let chunks = [];
+    const recordButton = document.getElementById("recordButton");
+    const recIcon = document.getElementById("recIcon");
+    const responseDiv = document.getElementById("response");
+
+    recordButton.addEventListener("touchstart", startRecording);
+    recordButton.addEventListener("touchend", stopRecording);
+
+    async function startRecording() {
+      recIcon.style.filter = "brightness(0.5)";
+      chunks = [];
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.start();
+      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+    }
+
+    function stopRecording() {
+      recIcon.style.filter = "";
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+        mediaRecorder.onstop = async () => {
+          const blob = new Blob(chunks, { type: "audio/webm" });
+          const formData = new FormData();
+          formData.append("audio", blob, "voice.webm");
+
+          const res = await fetch("/transcribe", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await res.json();
+          if (data.text) {
+            responseDiv.textContent = data.text;
+            speak(data.text);
+          } else {
+            responseDiv.textContent = "エラー：" + (data.error || "不明なエラー");
+          }
+        };
+      }
+    }
+
+    async function sendText() {
+      const input = document.getElementById("textInput").value;
+      if (!input) return;
+      responseDiv.textContent = "送信中...";
+
+      const res = await fetch("/transcribe", {
+        method: "POST",
+        body: new FormData(),
+      });
+      const data = await res.json();
+      if (data.text) {
+        responseDiv.textContent = data.text;
+        speak(data.text);
+      } else {
+        responseDiv.textContent = "エラー：" + (data.error || "不明なエラー");
+      }
+    }
+
+    function speak(text) {
+      const synth = window.speechSynthesis;
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "ja-JP";
+      synth.speak(utter);
+    }
+  </script>
 </body>
 </html>
