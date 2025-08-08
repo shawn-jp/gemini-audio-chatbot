@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Gemini 音声チャット</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>🎙 Gemini 音声チャット</h1>
+
+    <div class="rec-container">
+        <img src="/static/rec.png" id="recButton" class="rec-button" alt="REC">
+        <p id="status">押して話しかけてください</p>
+    </div>
+
+    <div>
+        <input type="text" id="textInput" placeholder="テキストを入力" />
+        <button onclick="sendText()">送信</button>
+    </div>
+
+    <div id="responseArea"></div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
