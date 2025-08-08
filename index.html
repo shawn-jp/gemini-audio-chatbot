@@ -2,14 +2,18 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>Gemini音声チャットボット</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gemini 音声チャット</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>🎙 Gemini 音声チャット</h1>
-  <img id="recordButton" src="rec_button.png" alt="録音" style="width:150px; cursor:pointer;" />
+  <img id="recordButton" src="rec_button.png" alt="録音ボタン" />
+  <p>またはテキストで送信：</p>
+  <form id="textForm">
+    <input type="text" id="textInput" placeholder="ここに入力" />
+    <button type="submit">送信</button>
+  </form>
   <div id="result"></div>
   <script src="script.js"></script>
 </body>

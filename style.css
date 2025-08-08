@@ -1,1 +1,21 @@
-body { font-family: sans-serif; text-align: center; padding: 2rem; }
+body {
+  font-family: sans-serif;
+  text-align: center;
+  padding: 2rem;
+}
+#recordButton {
+  width: 200px;
+  cursor: pointer;
+}
+form {
+  margin-top: 1rem;
+}
+input[type="text"] {
+  width: 60%;
+  padding: 8px;
+  font-size: 16px;
+}
+button {
+  padding: 8px 12px;
+  font-size: 16px;
+}
