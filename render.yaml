@@ -1,6 +1,0 @@
-services:
-  - type: web
-    name: gemini-audio-chatbot
-    env: python
-    buildCommand: ""
-    startCommand: gunicorn -w 1 -k gthread -b 0.0.0.0:$PORT server:app
